@@ -1,0 +1,318 @@
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <ctype.h>
+
+#ifdef _WIN32
+#include <windows.h>
+#define CLEAR "cls"
+#else
+#define CLEAR "clear"
+#endif
+
+#define MAX_WORDS 30
+#define MAX_LENGTH 30
+
+char easy[MAX_WORDS][MAX_LENGTH] = {
+    "apple", "tiger", "house", "chair", "water",
+    "phone", "bread", "music", "train", "light",
+    "river", "smile", "plant", "clock", "pizza",
+    "cloud", "table", "earth", "dream", "happy"
+};
+
+char medium[MAX_WORDS][MAX_LENGTH] = {
+    "computer", "keyboard", "elephant", "football",
+    "internet", "mountain", "hospital", "diamond",
+    "airplane", "umbrella", "dinosaur", "sandwich",
+    "calendar", "language", "festival", "painting",
+    "treasure", "adventure", "security", "database"
+};
+
+char hard[MAX_WORDS][MAX_LENGTH] = {
+    "programming", "technology", "engineering",
+    "artificial", "intelligence", "cryptography",
+    "development", "architecture", "cybersecurity",
+    "environment", "communication", "microprocessor",
+    "mathematics", "professional", "information",
+    "algorithm", "encryption", "networking",
+    "innovation", "application"
+};
+
+void drawHangman(int lives)
+{
+    printf("\n");
+
+    printf("  +---+\n");
+
+    if(lives <= 5)
+        printf("  |   O\n");
+    else
+        printf("  |\n");
+
+    if(lives <= 4)
+        printf("  |   |\n");
+    else
+        printf("  |\n");
+
+    if(lives <= 3 && lives > 2)
+        printf("  |  /|\n");
+    else if(lives <= 2)
+        printf("  |  /|\\\n");
+    else
+        printf("  |\n");
+
+    if(lives <= 1)
+        printf("  |  / \\\n");
+    else
+        printf("  |\n");
+
+    printf("  |\n");
+    printf("__|________\n");
+}
+
+int main()
+{
+    int level, choice;
+    int score = 0, bestScore = 0;
+    int lives, i, found, won;
+    int wordCount = 0;
+    char word[MAX_LENGTH];
+    char display[MAX_LENGTH];
+    char letter;
+    char used[26];
+    char again;
+
+    char (*selected)[MAX_LENGTH];
+
+    srand((unsigned int)time(NULL));
+
+    do
+    {
+        system(CLEAR);
+
+        printf("\n");
+        printf("====================================\n");
+        printf("          HANGMAN PRO\n");
+        printf("          WORD CHALLENGE\n");
+        printf("====================================\n");
+        printf("           MADE BY SANKET\n");
+        printf("------------------------------------\n");
+        printf("1. START GAME\n");
+        printf("2. HOW TO PLAY\n");
+        printf("3. VIEW SCORE\n");
+        printf("4. EXIT\n");
+        printf("------------------------------------\n");
+
+        printf("Enter choice: ");
+        scanf("%d", &choice);
+
+        if(choice == 1)
+        {
+            system(CLEAR);
+
+            printf("\nSELECT DIFFICULTY\n");
+            printf("1. EASY\n");
+            printf("2. MEDIUM\n");
+            printf("3. HARD\n");
+
+            printf("\nEnter level: ");
+            scanf("%d", &level);
+
+            if(level == 1)
+                selected = easy;
+            else if(level == 2)
+                selected = medium;
+            else if(level == 3)
+                selected = hard;
+            else
+            {
+                printf("Invalid level!");
+                getchar();
+                getchar();
+                continue;
+            }
+
+            if(level == 1)
+                lives = 7;
+            else if(level == 2)
+                lives = 6;
+            else
+                lives = 5;
+
+            strcpy(word, selected[rand() % MAX_WORDS]);
+
+            for(i = 0; word[i] != '\0'; i++)
+                display[i] = '_';
+
+            display[i] = '\0';
+
+            for(i = 0; i < 26; i++)
+                used[i] = 0;
+
+            won = 0;
+
+            while(lives > 0)
+            {
+                system(CLEAR);
+
+                printf("\n====================================\n");
+                printf("             HANGMAN PRO\n");
+                printf("====================================\n");
+
+                drawHangman(lives);
+
+                printf("\nWORD: ");
+
+                for(i = 0; display[i] != '\0'; i++)
+                    printf("%c ", display[i]);
+
+                printf("\n\nLIVES LEFT: %d\n", lives);
+                printf("SCORE: %d\n", score);
+
+                printf("\nUSED LETTERS: ");
+
+                for(i = 0; i < 26; i++)
+                {
+                    if(used[i])
+                        printf("%c ", 'A' + i);
+                }
+
+                printf("\n\nEnter a letter: ");
+                scanf(" %c", &letter);
+
+                letter = (char)tolower((unsigned char)letter);
+
+                if(letter < 'a' || letter > 'z')
+                {
+                    printf("Please enter an alphabet!\n");
+                    getchar();
+                    getchar();
+                    continue;
+                }
+
+                if(used[letter - 'a'])
+                {
+                    printf("You already used this letter!\n");
+                    getchar();
+                    getchar();
+                    continue;
+                }
+
+                used[letter - 'a'] = 1;
+                found = 0;
+
+                for(i = 0; word[i] != '\0'; i++)
+                {
+                    if(word[i] == letter)
+                    {
+                        display[i] = letter;
+                        found = 1;
+                    }
+                }
+
+                if(found)
+                {
+                    printf("\nCORRECT LETTER!\n");
+                    score += 10;
+                }
+                else
+                {
+                    printf("\nWRONG LETTER!\n");
+                    lives--;
+                }
+
+                if(strcmp(word, display) == 0)
+                {
+                    won = 1;
+                    score += lives * 20;
+                    break;
+                }
+
+                printf("\nPress ENTER to continue...");
+                getchar();
+                getchar();
+            }
+
+            system(CLEAR);
+
+            printf("\n====================================\n");
+
+            if(won)
+            {
+                printf("          YOU WIN!\n");
+                printf("====================================\n");
+                printf("Correct word: %s\n", word);
+                printf("Great guessing!\n");
+            }
+            else
+            {
+                printf("          GAME OVER!\n");
+                printf("====================================\n");
+                printf("Correct word: %s\n", word);
+            }
+
+            if(score > bestScore)
+                bestScore = score;
+
+            wordCount++;
+
+            printf("\nCurrent Score: %d\n", score);
+            printf("Best Score: %d\n", bestScore);
+            printf("\nPlay another round? (Y/N): ");
+            scanf(" %c", &again);
+        }
+        else if(choice == 2)
+        {
+            system(CLEAR);
+
+            printf("\n========== HOW TO PLAY ==========\n");
+            printf("1. Select your difficulty.\n");
+            printf("2. Guess one letter at a time.\n");
+            printf("3. Correct letters reveal the word.\n");
+            printf("4. Wrong letters reduce your lives.\n");
+            printf("5. Guess the complete word to win.\n");
+            printf("=================================\n");
+
+            printf("\nPress ENTER...");
+            getchar();
+            getchar();
+            again = 'Y';
+        }
+        else if(choice == 3)
+        {
+            system(CLEAR);
+
+            printf("\n========== STATISTICS ==========\n");
+            printf("Words Played: %d\n", wordCount);
+            printf("Total Score: %d\n", score);
+            printf("Best Score: %d\n", bestScore);
+            printf("================================\n");
+
+            printf("\nPress ENTER...");
+            getchar();
+            getchar();
+            again = 'Y';
+        }
+        else if(choice == 4)
+        {
+            printf("\nTHANKS FOR PLAYING!\n");
+            printf("GAME DEVELOPED BY SANKET\n");
+            return 0;
+        }
+        else
+        {
+            printf("\nInvalid choice!\n");
+            again = 'Y';
+            getchar();
+            getchar();
+        }
+
+    } while(again == 'Y' || again == 'y');
+
+    printf("\nTHANKS FOR PLAYING HANGMAN PRO!\n");
+    printf("MADE BY SANKET\n");
+
+    return 0;
+}
